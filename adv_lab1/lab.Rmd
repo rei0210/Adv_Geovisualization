@@ -1,0 +1,61 @@
+---
+title: "lab1"
+author: "Jiangpan Bian"
+date: "2024-10-29"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(sf)
+
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+```
+
+
+```{r}
+boulder<-st_read("D:/RSpace/Adv_Geovisualization/adv_lab1/data/boulder/BoulderSocialMedia.shp")
+```
+
+
+```{r}
+hike<-boulder %>%
+  filter((DB=="Pano"|DB=="Flickr"))
+
+ggplot() +
+    geom_sf(data =boulder, aes(color=PT_Elev),
+    fill = NA, alpha = .2) +
+  scale_colour_gradientn(colours = terrain.colors(10),name="Elevation") +  
+      geom_sf(data = hike,color="skyblue",fill="skyblue",
+          size = 2, shape = 21, alpha = 0.8) +
+  
+  theme_bw()+
+   theme(legend.position = "right")+
+   ggtitle("Boulder Hiking Map", subtitle = "Social Media Locations that are close to hiking trail")
+
+```
+
+
+```{r}
+
+
+p.scatter <- ggplot(hike) + 
+  geom_point(aes(x=PT_Elev, y=TrailH_Dis,color=DB))+
+  theme_minimal() +  # Optional: Clean theme
+  labs(
+    title = "Scatter Chart of Elevation and Trail Distance of Boulder",  # Title
+    subtitle = "Data sources: Pano and Flickr",  # Optional Subtitle
+    x = "Elevation (PT_Elev)",  # X-axis label
+    y = "Trail Distance (TrailH_Dis)",  # Y-axis label
+    color = "Data Source"  # Legend label
+  ) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Centered and bold title
+    plot.subtitle = element_text(hjust = 0.5, size = 12)  # Centered subtitle
+  )
+p.scatter
+
+
+```

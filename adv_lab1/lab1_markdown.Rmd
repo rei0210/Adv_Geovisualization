@@ -45,18 +45,121 @@ library(viridis)
 ggplot() +
     geom_sf(data =boulder, aes(color=Climb_dist),
     fill = NA, alpha = .2) +
-  scale_colour_gradientn(colours = viridis(10)) +  
+  scale_colour_gradientn(colours = viridis(10),name="distance to climbing wall") +  
   theme_bw()
 
-climb<-boulder %>%
-  filter(Climb_dist<=1000)
-print(climb)
+#climb<-boulder %>%
+#  filter(Climb_dist<=1000)
+#print(climb)
+
+#ggplot() +
+#    geom_sf(data =climb, aes(color=Climb_dist),
+#   fill = NA, alpha = .2) +
+#  scale_colour_gradientn(colours = viridis(10)) +  
+# theme_bw()
+
+
+```
+Look at the locations that are less than 1000 meters away from a climbing wall
+
+```{r}
+#library(dplyer)
+boulder %>%
+    mutate(close_to_climbing_wall = ifelse(Climb_dist <= 1000, TRUE, FALSE))%>% 
+ggplot() +
+  geom_sf(aes(color=close_to_climbing_wall),
+    fill = NA, alpha = .2)  +  
+  theme_bw()
+```
+We can find that this is a good place for rock climbing, since most of its area is very close to the climbing site.
+
+We can explore its natural landmarks as well. By running the following code, we can find out all social media locations in Flickr that are less than 50 meters away from a natural landmark.
+```{r}
+landmark<-boulder %>%
+  filter(NatMrk_Dis<=100&(DB=="Pano"|DB=="Flickr"))
 
 ggplot() +
-    geom_sf(data =climb, aes(color=Climb_dist),
+    geom_sf(data =boulder, aes(color=PT_Elev),
     fill = NA, alpha = .2) +
-  scale_colour_gradientn(colours = viridis(10)) +  
-  theme_bw()
+  scale_colour_gradientn(colours = terrain.colors(10),name="Elevation") +  
+      geom_sf(data = landmark,color="skyblue",fill="skyblue",
+          size = 2, shape = 21, alpha = 0.8) +
+  
+  theme_bw()+
+   theme(legend.position = "right")
+
+```
+Use Tmap to show the distance from hiking trail.
+```{r}
+library(tmap)
+tm_shape(boulder) + 
+  ## which variable, is there a class interval, palette, and other options
+  tm_symbols(col='TrailH_Dis', 
+             style='quantile', 
+             palette = 'PuBu',
+             border.lwd = NA,
+             size = 0.5)
+
+```
+We can also make a interactive map.
+The following map exhibits the Asian population of Dane County,WI, showing that Asian population mainly concentrates in the middle of Dane County.
+```{r}
+library(tidycensus)
+# For creating tmap
+
+library(tmap)
+# For reading and processing spatial data related to tmap      
+
+library(tmaptools)
+# For data wrangling
+
+## the view mode creates an interactive map
+tmap_mode("view")
+racevars <- c(White = "P005003",
+              Black = "P005004",
+              Asian = "P005006",
+              Hispanic = "P004003",
+              HouseUnits = "H001001",
+              Rent = "H004004" )
+dane <- get_decennial(geography = "tract", variables = racevars,
+                       state = "WI", county = "Dane County", geometry = TRUE,
+                       summary_var = "P001001", year = 2010)
+print(dane)
+dane_asian<-dane %>%
+  filter(variable=="Asian")
+tm_shape(dane_asian) + 
+  ## which variable, is there a class interval, palette, and other options
+  tm_symbols(col='value', 
+             style='quantile', 
+             palette = 'YlOrRd',
+             border.lwd = NA,
+             size = 0.1)
 
 
+```
+chart
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+# Make scatter plot of Sepal.Length and Sepal.Width
+
+p.scatter <- ggplot(landmark) + geom_point(aes(x=TrailH_Dis, y=Bike_dis,color=DB))
+p.scatter
+
+
+tidy_iris <- iris %>% 
+  gather(feature_name, feature_value, one_of(c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")))
+p.box.facet <- ggplot(tidy_iris) + geom_boxplot(aes(x=Species, y=feature_value)) + facet_grid(feature_name~Species)
+p.box.facet
+print(tidy_iris)
+library(grid)
+# Show bivariate scatter plot and univariate histogram
+p.hist.len <- ggplot(iris) + geom_histogram(aes(x=Sepal.Length))
+p.hist.wid <- ggplot(iris) + geom_histogram(aes(x=Sepal.Width)) + coord_flip()
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(3, 3)))
+print(p.scatter, vp=viewport(layout.pos.row=2:3, layout.pos.col=1:2))
+print(p.hist.len, vp=viewport(layout.pos.row=1, layout.pos.col=1:2))
+print(p.hist.wid, vp=viewport(layout.pos.row=2:3, layout.pos.col=3))
 ```
