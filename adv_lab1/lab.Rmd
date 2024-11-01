@@ -4,7 +4,7 @@ author: "Jiangpan Bian"
 date: "2024-10-29"
 output: html_document
 ---
-
+# Advanced Geovisualization Lab1
 ```{r}
 library(ggplot2)
 library(sf)
@@ -14,15 +14,25 @@ library(tidyr)
 library(dplyr)
 ```
 
+## Question 1
+**Discuss the advantages and challenges associated with an open data science approach. Provide an example based on this week’s reading. (1-2 paragraphs)**
+The advantages of open data science apporoach is that it can promote innovation and research.The collection of spatial data often requires a certain amount of manpower and resources.Open data allows researchers from various field to obtain data for free, so that the researchers do not need to collect the same data themselves, significantly reducing the manpower, financial, and time costs of the research. 
+The challenges associated with an open data science approach mainly lies on the unguaranteed data quality and misinterpretation. As it is mentioned by Kitchin, the rise of empiricism in big data analysis also risks sidelining theoretical frameworks, potentially leading to naive interpretations devoid of contextual understanding. Open data source is really complex and contains data from different organizations, which may vary in quality and may lack context, leading to misinterpretations or incorrect conclusions.
 
+
+## Question 2
+Load the boulder media data:
 ```{r}
 boulder<-st_read("D:/RSpace/Adv_Geovisualization/adv_lab1/data/boulder/BoulderSocialMedia.shp")
 ```
 
+### 1 Boulder Hiking Map
+
+This map shows all social media locations that are **less than 1000 meters** away from hiking trails. You can find that these locations concentrate around the central and northern areas, where the elevation is less than 2200 meters.
 
 ```{r}
 hike<-boulder %>%
-  filter((DB=="Pano"|DB=="Flickr"))
+  filter((DB=="Pano"|DB=="Flickr")&TrailH_Dis<=1000)
 
 ggplot() +
     geom_sf(data =boulder, aes(color=PT_Elev),
@@ -36,16 +46,22 @@ ggplot() +
    ggtitle("Boulder Hiking Map", subtitle = "Social Media Locations that are close to hiking trail")
 
 ```
+### 2 Scatter Chart of Elevation and Distance from hiking trail
+
+This chart is a scatter Chart of Elevation and Distance from hiking trail in Boulder.
+
+There’s a denser clustering of points at lower trail distances (0–500 meters), suggesting that people post more frequently when they’re closer to hiking trails.
+
+Elevations below 2000 meters have higher data density from both sources, with a mix of Pano and Flickr data points.As elevation increases above 2000 meters, there are fewer data points, especially from Pano, indicating potentially fewer visitors or less social media activity at higher elevations.
 
 
 ```{r}
-
 
 p.scatter <- ggplot(hike) + 
   geom_point(aes(x=PT_Elev, y=TrailH_Dis,color=DB))+
   theme_minimal() +  # Optional: Clean theme
   labs(
-    title = "Scatter Chart of Elevation and Trail Distance of Boulder",  # Title
+    title = "Scatter Chart of Elevation and Distance from hiking trail of Boulder",  # Title
     subtitle = "Data sources: Pano and Flickr",  # Optional Subtitle
     x = "Elevation (PT_Elev)",  # X-axis label
     y = "Trail Distance (TrailH_Dis)",  # Y-axis label
@@ -59,3 +75,5 @@ p.scatter
 
 
 ```
+
+
